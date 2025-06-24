@@ -1,0 +1,15 @@
+[package]
+name = "citizenhub-program"
+version = "0.1.0"
+authors = ["Your Name <you@example.com>"]
+edition = "2021"
+
+[[bin]]
+name = "anchor-hello"
+path = "src/lib.rs"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+anchor-lang = "0.31.1"

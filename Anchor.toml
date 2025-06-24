@@ -1,0 +1,12 @@
+[programs.devnet]
+citizenhub_program = "CLGiHLTiggu1bPa91aGUtP3viTxqmSe2FNa3gzh4goEU"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "anchor test"
+
+[toolchain]
+anchor_version = "0.31.1"
