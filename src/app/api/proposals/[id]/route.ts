@@ -104,8 +104,9 @@ const mockProposals = [
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   const proposalId = params.id;
   const proposal = mockProposals.find(p => p.id === proposalId);
   

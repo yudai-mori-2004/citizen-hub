@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { support_level, comment } = await request.json();
+    const params = await context.params;
     const proposalId = params.id;
     
     // Mock vote submission
