@@ -4,7 +4,9 @@ export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
     
-    // Mock user creation
+    // Mock user creation for development
+    console.log('Mock signup attempt:', { email, password });
+    
     const mockUser = {
       user_id: crypto.randomUUID(),
       email,
@@ -13,7 +15,7 @@ export async function POST(request: NextRequest) {
     };
     
     return NextResponse.json(mockUser);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Invalid request' },
       { status: 400 }

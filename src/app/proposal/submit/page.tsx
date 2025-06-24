@@ -37,7 +37,7 @@ export default function SubmitProposal() {
       } else {
         alert("エラーが発生しました。再度お試しください。");
       }
-    } catch (error) {
+    } catch {
       alert("エラーが発生しました。再度お試しください。");
     } finally {
       setIsSubmitting(false);

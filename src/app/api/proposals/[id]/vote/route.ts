@@ -23,7 +23,7 @@ export async function POST(
       vote,
       message: '投票が完了しました'
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Invalid vote data' },
       { status: 400 }

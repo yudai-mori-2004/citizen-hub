@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,11 +31,7 @@ export default function ProposalVoting() {
   const [isVoting, setIsVoting] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
 
-  useEffect(() => {
-    fetchProposal();
-  }, [proposalId]);
-
-  const fetchProposal = async () => {
+  const fetchProposal = useCallback(async () => {
     try {
       const response = await fetch(`/api/proposals/${proposalId}`);
       if (response.ok) {
@@ -45,7 +41,11 @@ export default function ProposalVoting() {
     } catch (error) {
       console.error("Error fetching proposal:", error);
     }
-  };
+  }, [proposalId]);
+
+  useEffect(() => {
+    fetchProposal();
+  }, [fetchProposal]);
 
   const handleVote = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +70,7 @@ export default function ProposalVoting() {
       } else {
         alert("投票に失敗しました。再度お試しください。");
       }
-    } catch (error) {
+    } catch {
       alert("エラーが発生しました。再度お試しください。");
     } finally {
       setIsVoting(false);

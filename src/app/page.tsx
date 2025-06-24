@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import HeroSection from "@/components/HeroSection";
 import ProposalCard from "@/components/ProposalCard";
-import { FileText, Plus, Trophy } from "lucide-react";
+import { FileText, Trophy } from "lucide-react";
 
 interface Proposal {
   id: string;

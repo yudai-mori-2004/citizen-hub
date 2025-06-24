@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
     };
     
     return NextResponse.json(newProposal);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Invalid request' },
       { status: 400 }
