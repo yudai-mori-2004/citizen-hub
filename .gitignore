@@ -38,6 +38,16 @@ wallet-keypair.json
 # Project-specific files to exclude
 CLAUDE.md
 
+# Anchor build files
+**/target/
+test-ledger/
+.anchor/
+programs/**/target/
+
+# Rust/Cargo
+Cargo.lock
+**/*.rs.bk
+
 # vercel
 .vercel
 
