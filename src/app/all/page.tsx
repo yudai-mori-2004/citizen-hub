@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Layout from "@/components/Layout";
 import ProposalCard from "@/components/ProposalCard";
@@ -21,7 +21,7 @@ interface Proposal {
   voting_end_date: string;
 }
 
-export default function AllProposalsPage() {
+function AllProposalsContent() {
   const searchParams = useSearchParams();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,122 +101,130 @@ export default function AllProposalsPage() {
   }
 
   return (
-    <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-center mb-2">All Proposals</h1>
-          <p className="text-center text-muted-foreground">
-            Browse and participate in community proposals
-          </p>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-center mb-2">All Proposals</h1>
+        <p className="text-center text-muted-foreground">
+          Browse and participate in community proposals
+        </p>
+      </div>
 
-        {/* Filter Tabs */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {['upcoming', 'active', 'approved', 'rejected'].map((filterType) => (
-            <Button
-              key={filterType}
-              variant={filter === filterType ? "default" : "outline"}
-              onClick={() => {
-                setFilter(filterType);
-                setCurrentPage(1); // Reset page when filter changes
-              }}
-              className="flex items-center gap-2"
-            >
-              {getFilterLabel(filterType)}
-              <Badge variant="secondary">{getFilterCount(filterType)}</Badge>
-            </Button>
-          ))}
-        </div>
+      {/* Filter Tabs */}
+      <div className="flex flex-wrap justify-center gap-2 mb-8">
+        {['upcoming', 'active', 'approved', 'rejected'].map((filterType) => (
+          <Button
+            key={filterType}
+            variant={filter === filterType ? "default" : "outline"}
+            onClick={() => {
+              setFilter(filterType);
+              setCurrentPage(1); // Reset page when filter changes
+            }}
+            className="flex items-center gap-2"
+          >
+            {getFilterLabel(filterType)}
+            <Badge variant="secondary">{getFilterCount(filterType)}</Badge>
+          </Button>
+        ))}
+      </div>
 
-        {/* Proposals Grid */}
-        {filteredProposals.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-lg text-muted-foreground">
-              No {getFilterLabel(filter).toLowerCase()} proposals found
-            </div>
+      {/* Proposals Grid */}
+      {filteredProposals.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-lg text-muted-foreground">
+            No {getFilterLabel(filter).toLowerCase()} proposals found
           </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProposals
-                .slice((currentPage - 1) * proposalsPerPage, currentPage * proposalsPerPage)
-                .map((proposal) => (
-                  <ProposalCard key={proposal.id} proposal={proposal} />
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProposals
+              .slice((currentPage - 1) * proposalsPerPage, currentPage * proposalsPerPage)
+              .map((proposal) => (
+                <ProposalCard key={proposal.id} proposal={proposal} />
+              ))}
+          </div>
+          
+          {/* Pagination */}
+          {filteredProposals.length > proposalsPerPage && (
+            <div className="flex justify-center items-center gap-4 mt-12">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2"
+              >
+                Previous
+              </Button>
+              
+              <div className="flex gap-2">
+                {Array.from(
+                  { length: Math.ceil(filteredProposals.length / proposalsPerPage) },
+                  (_, i) => i + 1
+                ).map((page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    onClick={() => setCurrentPage(page)}
+                    className="w-10 h-10"
+                  >
+                    {page}
+                  </Button>
                 ))}
-            </div>
-            
-            {/* Pagination */}
-            {filteredProposals.length > proposalsPerPage && (
-              <div className="flex justify-center items-center gap-4 mt-12">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2"
-                >
-                  Previous
-                </Button>
-                
-                <div className="flex gap-2">
-                  {Array.from(
-                    { length: Math.ceil(filteredProposals.length / proposalsPerPage) },
-                    (_, i) => i + 1
-                  ).map((page) => (
-                    <Button
-                      key={page}
-                      variant={currentPage === page ? "default" : "outline"}
-                      onClick={() => setCurrentPage(page)}
-                      className="w-10 h-10"
-                    >
-                      {page}
-                    </Button>
-                  ))}
-                </div>
-                
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(Math.min(Math.ceil(filteredProposals.length / proposalsPerPage), currentPage + 1))}
-                  disabled={currentPage === Math.ceil(filteredProposals.length / proposalsPerPage)}
-                  className="px-4 py-2"
-                >
-                  Next
-                </Button>
               </div>
-            )}
-          </>
-        )}
+              
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(Math.min(Math.ceil(filteredProposals.length / proposalsPerPage), currentPage + 1))}
+                disabled={currentPage === Math.ceil(filteredProposals.length / proposalsPerPage)}
+                className="px-4 py-2"
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
+      )}
 
-        {/* Summary Stats */}
-        <div className="mt-12 bg-accent/30 rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4 text-center">Statistics</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-primary">
-                {proposals.length}
-              </div>
-              <div className="text-sm text-muted-foreground">Total Proposals</div>
+      {/* Summary Stats */}
+      <div className="mt-12 bg-accent/30 rounded-lg p-6">
+        <h3 className="text-lg font-semibold mb-4 text-center">Statistics</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div>
+            <div className="text-2xl font-bold text-primary">
+              {proposals.length}
             </div>
-            <div>
-              <div className="text-2xl font-bold text-green-600">
-                {getFilterCount("active")}
-              </div>
-              <div className="text-sm text-muted-foreground">Voting Now</div>
+            <div className="text-sm text-muted-foreground">Total Proposals</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-green-600">
+              {getFilterCount("active")}
             </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-600">
-                {getFilterCount("approved")}
-              </div>
-              <div className="text-sm text-muted-foreground">Approved</div>
+            <div className="text-sm text-muted-foreground">Voting Now</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-blue-600">
+              {getFilterCount("approved")}
             </div>
-            <div>
-              <div className="text-2xl font-bold text-red-600">
-                {getFilterCount("rejected")}
-              </div>
-              <div className="text-sm text-muted-foreground">Rejected</div>
+            <div className="text-sm text-muted-foreground">Approved</div>
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-red-600">
+              {getFilterCount("rejected")}
             </div>
+            <div className="text-sm text-muted-foreground">Rejected</div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export default function AllProposalsPage() {
+  return (
+    <Layout>
+      <Suspense fallback={<LoadingSpinner size="lg" text="Loading proposals..." fullScreen />}>
+        <AllProposalsContent />
+      </Suspense>
     </Layout>
   );
 }
