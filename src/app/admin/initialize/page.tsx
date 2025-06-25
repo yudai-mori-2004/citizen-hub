@@ -77,7 +77,7 @@ export default function InitializePage() {
   ]);
 
   const [isInitializing, setIsInitializing] = useState(false);
-  const [initConfig, setInitConfig] = useState<any>(null);
+  const [initConfig, setInitConfig] = useState<{mint: PublicKey, mintAuthority: PublicKey, vaultTokenAccount: PublicKey, mintKeypair: Keypair} | null>(null);
 
   const updateStepStatus = (id: string, status: InitStep["status"], result?: string, error?: string) =>
     setSteps(prev => prev.map(s => s.id === id ? { ...s, status, result, error } : s));
@@ -124,7 +124,7 @@ export default function InitializePage() {
     updateStepStatus("initialize-program", "running");
     try {
       const provider = createProvider(wallet);
-      const program = new Program(idl as any, provider);
+      const program = new Program(idl as never, provider);
 
       const [mintState] = await getMintStatePDA();
 
@@ -157,8 +157,9 @@ export default function InitializePage() {
       await connection.confirmTransaction(sig, "confirmed");
 
       updateStepStatus("initialize-program", "completed", sig);
-    } catch (e: any) {
-      updateStepStatus("initialize-program", "error", undefined, e.message);
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      updateStepStatus("initialize-program", "error", undefined, errorMessage);
       throw e;
     }
   };
@@ -172,8 +173,9 @@ export default function InitializePage() {
       } else {
         updateStepStatus("verify", "error", undefined, "Not found");
       }
-    } catch (e: any) {
-      updateStepStatus("verify", "error", undefined, e.message);
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      updateStepStatus("verify", "error", undefined, errorMessage);
     }
   };
 

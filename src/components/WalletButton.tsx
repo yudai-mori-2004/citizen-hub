@@ -3,7 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useWallet } from '@/hooks/useWallet';
-import { Wallet, WalletIcon } from 'lucide-react';
+import { WalletIcon } from 'lucide-react';
 
 interface WalletButtonProps {
   className?: string;

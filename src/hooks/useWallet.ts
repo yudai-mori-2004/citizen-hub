@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { PublicKey, Connection } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
+import { Transaction } from '@solana/web3.js';
 
 interface PhantomWallet {
   isPhantom: boolean;
   publicKey: PublicKey | null;
   isConnected: boolean;
-  signTransaction: (transaction: any) => Promise<any>;
-  signAllTransactions: (transactions: any[]) => Promise<any[]>;
+  signTransaction: (transaction: Transaction) => Promise<Transaction>;
+  signAllTransactions: (transactions: Transaction[]) => Promise<Transaction[]>;
   signMessage: (message: Uint8Array) => Promise<{ signature: Uint8Array }>;
   connect: () => Promise<{ publicKey: PublicKey }>;
   disconnect: () => Promise<void>;

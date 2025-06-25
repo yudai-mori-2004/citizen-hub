@@ -14,44 +14,17 @@ import { Button } from "@/components/ui/button";
 import {
     Home,
     FileText,
-    Plus,
-    Menu,
     LogIn,
     User,
-    Coins,
     BarChart3,
     Gift,
 } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import WalletButton from "./WalletButton";
-import PROSBalance from "./PROSBalance";
-
-interface UserBalance {
-    balance: number;
-    user_id: string;
-}
 
 export default function Navbar() {
     const { data: session, status } = useSession();
-    const [userBalance, setUserBalance] = useState<UserBalance | null>(null);
 
-    useEffect(() => {
-        if (session) {
-            fetchUserBalance();
-        }
-    }, [session]);
-
-    const fetchUserBalance = async () => {
-        try {
-            const response = await fetch("/api/user/balance");
-            if (response.ok) {
-                const data = await response.json();
-                setUserBalance(data);
-            }
-        } catch (error) {
-            console.error("Error fetching user balance:", error);
-        }
-    };
 
     return (
         <nav className="bg-white/90 backdrop-blur-sm border-b border-tropical-sun/20 sticky top-0 z-50 overflow-visible">
