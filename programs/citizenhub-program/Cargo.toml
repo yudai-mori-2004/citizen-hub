@@ -1,15 +1,27 @@
 [package]
-name = "citizenhub-program"
+name    = "citizenhub-program"
 version = "0.1.0"
 authors = ["Your Name <you@example.com>"]
 edition = "2021"
-
-[[bin]]
-name = "anchor-hello"
-path = "src/lib.rs"
 
 [lib]
 crate-type = ["cdylib", "lib"]
 
 [dependencies]
-anchor-lang = "0.31.1"
+anchor-lang = { version = "0.31.1", features = ["init-if-needed"] }
+anchor-spl  = "0.31.1"
+
+[features]
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[package.metadata.check-cfg]
+allowed-features = [
+  "idl-build",
+  "no-entrypoint",
+  "cpi",
+  "custom-heap",
+  "custom-panic",
+  "anchor-debug",
+  "no-idl",
+  "no-log-ix-name",
+]

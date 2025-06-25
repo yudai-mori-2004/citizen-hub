@@ -16,6 +16,7 @@ interface ProposalCardProps {
         support_count: number | null;
         oppose_count: number | null;
         final_result: string | null;
+        voting_start_date?: string;
     };
 }
 
@@ -67,7 +68,7 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
                     </Badge>
                     <div className="text-sm text-tropical-teal/60 font-medium bg-tropical-sun/10 px-3 py-1 rounded-full flex items-center gap-1">
                         <Calendar size={12} />
-                        {proposal.vote_count}票
+                        {proposal.vote_count} votes
                     </div>
                 </div>
 
@@ -76,15 +77,15 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
                     <div className="text-sm space-y-2 bg-gray-50/80 rounded-xl p-3">
                         <div className="flex justify-between items-center">
                             <span className="text-tropical-teal/70 flex items-center gap-2">
-                                <ThumbsUp size={14} className="text-tropical-green" /> 賛成:
+                                <ThumbsUp size={14} className="text-tropical-green" /> Support:
                             </span>
-                            <span className="font-semibold text-tropical-green">{proposal.support_count}票</span>
+                            <span className="font-semibold text-tropical-green">{proposal.support_count} votes</span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-tropical-teal/70 flex items-center gap-2">
-                                <ThumbsDown size={14} className="text-red-500" /> 反対:
+                                <ThumbsDown size={14} className="text-red-500" /> Oppose:
                             </span>
-                            <span className="font-semibold text-red-500">{proposal.oppose_count}票</span>
+                            <span className="font-semibold text-red-500">{proposal.oppose_count} votes</span>
                         </div>
                         {proposal.final_result && (
                             <div className="text-center mt-3">
@@ -96,12 +97,12 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
                                     {proposal.final_result === 'approved' ? (
                                         <>
                                             <CheckCircle size={14} />
-                                            可決
+                                            Approved
                                         </>
                                     ) : (
                                         <>
                                             <FileText size={14} />
-                                            否決
+                                            Rejected
                                         </>
                                     )}
                                 </Badge>
@@ -116,12 +117,12 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
                         {isVotingActive ? (
                             <>
                                 <Vote size={14} />
-                                投票期間中
+                                Voting Active
                             </>
                         ) : (
                             <>
                                 <Clock size={14} />
-                                投票待ち
+                                Voting starts: {proposal.voting_start_date ? new Date(proposal.voting_start_date).toLocaleDateString("en-US", { month: "long", day: "numeric" }) : "--"}
                             </>
                         )}
                     </div>
@@ -140,12 +141,12 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
                         {isVotingActive ? (
                             <>
                                 <Vote size={16} />
-                                投票する
+                                Vote Now
                             </>
                         ) : (
                             <>
                                 <FileText size={16} />
-                                詳細を見る
+                                View Details
                             </>
                         )}
                     </Button>

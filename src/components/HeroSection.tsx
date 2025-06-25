@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Plus, Trophy } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 
 export default function HeroSection() {
     return (
@@ -17,27 +17,27 @@ export default function HeroSection() {
                         <span className="text-tropical-teal font-medium">Citizen</span>
                         <span className="text-tropical-orange font-light">Hub</span>
                         <br />
-                        <span className="text-3xl md:text-4xl text-tropical-teal/80 font-light">へようこそ</span>
+                        <span className="text-3xl md:text-4xl text-tropical-teal/80 font-light">Welcome</span>
                     </h1>
                     
                     <p className="text-xl md:text-2xl text-tropical-teal/70 mb-4 font-light leading-relaxed">
-                        トークンをステークして提案を投稿し、
+                        Stake tokens to submit proposals and
                     </p>
                     <p className="text-xl md:text-2xl text-tropical-teal/70 mb-12 font-light leading-relaxed">
-                        コミュニティで民主的に投票しましょう
+                        vote democratically as a community
                     </p>
                     
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                         <Link href="/proposal/submit">
                             <Button size="lg" className="gradient-tropical hover:gradient-sunset text-white font-medium px-8 py-4 rounded-2xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-3">
                                 <Plus size={20} />
-                                新しく提案する
+                                Submit New Proposal
                             </Button>
                         </Link>
-                        <Link href="/approved">
+                        <Link href="/all">
                             <Button size="lg" variant="outline" className="border-2 border-tropical-teal text-tropical-teal hover:bg-tropical-teal hover:text-white font-medium px-8 py-4 rounded-2xl transition-all duration-300 flex items-center gap-3">
-                                <Trophy size={20} />
-                                採択された提案を見る
+                                <FileText size={20} />
+                                View All Proposals
                             </Button>
                         </Link>
                     </div>

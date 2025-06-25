@@ -1,135 +1,129 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Mock proposals data
-const mockProposals = [
-  {
-    id: 'prop-1',
-    title: '公園に新しい遊具を設置する提案',
-    description: '子供たちのために地域の公園に新しい遊具を設置することを提案します。安全性を重視した設計で、幅広い年齢層が楽しめる設備を考えています。',
-    proposer: 'user-123',
-    stake_amount: 100,
-    status: 'Active',
-    voting_end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    vote_count: 45,
-    // Results hidden during active voting
-    support_count: null,
-    oppose_count: null,
-    final_result: null
-  },
-  {
-    id: 'prop-2', 
-    title: '地域図書館の開館時間延長',
-    description: '働く住民のために図書館の平日開館時間を21時まで延長することを提案します。',
-    proposer: 'user-456',
-    stake_amount: 100,
-    status: 'Active',
-    voting_end_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    vote_count: 23,
-    // Results hidden during active voting
-    support_count: null,
-    oppose_count: null,
-    final_result: null
-  },
-  {
-    id: 'prop-3',
-    title: '商店街でのフリーWiFi設置',
-    description: '地域活性化のため商店街にフリーWiFiを設置し、観光客や住民の利便性を向上させる提案です。',
-    proposer: 'user-789',
-    stake_amount: 100,
-    status: 'Pending',
-    voting_end_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
-    created_at: new Date().toISOString(),
-    vote_count: 0,
-    support_count: null,
-    oppose_count: null,
-    final_result: null
-  },
-  {
-    id: 'prop-4',
-    title: '駅前広場の清掃頻度増加',
-    description: '駅前広場の清掃を週2回から毎日に増やすことで、より清潔で快適な環境を維持する提案です。',
-    proposer: 'user-999',
-    stake_amount: 100,
-    status: 'Finalized',
-    voting_end_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    vote_count: 87,
-    support_count: 52,
-    oppose_count: 35,
-    final_result: 'approved'
-  },
-  {
-    id: 'prop-5',
-    title: '地域防災用品の配布拠点設置',
-    description: '災害時に備えて、各町内に防災用品の配布拠点を設置する提案です。緊急時の物資供給体制を整備します。',
-    proposer: 'user-888',
-    stake_amount: 100,
-    status: 'Finalized',
-    voting_end_date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    created_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-    vote_count: 134,
-    support_count: 89,
-    oppose_count: 45,
-    final_result: 'approved'
-  },
-  {
-    id: 'prop-6',
-    title: '住民税の一時減税',
-    description: '経済支援として住民税を一時的に減税する提案です。コロナ禍の影響を受けた住民への負担軽減を目指します。',
-    proposer: 'user-777',
-    stake_amount: 100,
-    status: 'Finalized',
-    voting_end_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    created_at: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString(),
-    vote_count: 156,
-    support_count: 68,
-    oppose_count: 88,
-    final_result: 'rejected'
-  },
-  {
-    id: 'prop-7',
-    title: 'コミュニティ農園の開設',
-    description: '住民が共同で利用できる農園を開設し、地域コミュニティの活性化と食育を推進する提案です。',
-    proposer: 'user-666',
-    stake_amount: 100,
-    status: 'Finalized',
-    voting_end_date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-    created_at: new Date(Date.now() - 55 * 24 * 60 * 60 * 1000).toISOString(),
-    vote_count: 98,
-    support_count: 72,
-    oppose_count: 26,
-    final_result: 'approved'
-  }
-];
+import { sql } from '@/lib/db';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]/route';
 
 export async function GET() {
-  return NextResponse.json({ proposals: mockProposals });
+  try {
+    const proposals = await sql`
+      SELECT 
+        p.*,
+        COUNT(v.id) as vote_count,
+        CASE 
+          WHEN p.status = 'Finalized' THEN 
+            COUNT(CASE WHEN v.support_level > 0 THEN 1 END)
+          ELSE NULL 
+        END as support_count,
+        CASE 
+          WHEN p.status = 'Finalized' THEN 
+            COUNT(CASE WHEN v.support_level < 0 THEN 1 END)
+          ELSE NULL 
+        END as oppose_count,
+        CASE 
+          WHEN p.status = 'Finalized' THEN 
+            COUNT(CASE WHEN v.support_level = 0 THEN 1 END)
+          ELSE NULL 
+        END as neutral_count
+      FROM proposals p
+      LEFT JOIN votes v ON p.id = v.proposal_id
+      GROUP BY p.id
+      ORDER BY p.created_at DESC
+    `;
+
+    return NextResponse.json({ proposals });
+  } catch (error) {
+    console.error('Error fetching proposals:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch proposals' },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { title, description, voting_duration_days } = await request.json();
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.email) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const { 
+      title, 
+      description, 
+      wallet_address,
+      proposal_seed_pubkey,
+      on_chain_transaction_signature
+    } = await request.json();
     
-    const newProposal = {
-      id: crypto.randomUUID(),
-      title,
-      description,
-      proposer: 'current-user',
-      stake_amount: 100,
-      status: 'Pending',
-      voting_end_date: new Date(Date.now() + voting_duration_days * 24 * 60 * 60 * 1000).toISOString(),
-      created_at: new Date().toISOString(),
-      vote_count: 0,
-      support_rate: 0
-    };
+    if (!title || !description || !wallet_address || !proposal_seed_pubkey || !on_chain_transaction_signature) {
+      return NextResponse.json(
+        { error: 'Title, description, wallet address, proposal seed, and transaction signature are required' },
+        { status: 400 }
+      );
+    }
+
+    // Get user ID from database using email
+    const [user] = await sql`
+      SELECT id FROM users WHERE email = ${session.user.email}
+    `;
     
-    return NextResponse.json(newProposal);
-  } catch {
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Calculate voting dates (next day at 0:00 UTC, run for 7 days)
+    const now = new Date();
+    const nextDay = new Date(now);
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+    nextDay.setUTCHours(0, 0, 0, 0);
+    
+    const endDate = new Date(nextDay);
+    endDate.setUTCDate(endDate.getUTCDate() + 7);
+
+    // Store proposal in database with on-chain reference
+    const [proposal] = await sql`
+      INSERT INTO proposals (
+        title, 
+        description, 
+        proposer_id, 
+        status, 
+        voting_start_date, 
+        voting_end_date,
+        on_chain_proposal_seed,
+        on_chain_tx_signature,
+        proposer_wallet_address
+      )
+      VALUES (
+        ${title}, 
+        ${description}, 
+        ${user.id}, 
+        'Pending',
+        ${nextDay.toISOString()},
+        ${endDate.toISOString()},
+        ${proposal_seed_pubkey},
+        ${on_chain_transaction_signature},
+        ${wallet_address}
+      )
+      RETURNING *
+    `;
+    
+    return NextResponse.json({
+      success: true,
+      proposal,
+      message: 'Proposal submitted successfully with on-chain collateral locked'
+    });
+  } catch (error) {
+    console.error('Error creating proposal:', error);
     return NextResponse.json(
-      { error: 'Invalid request' },
-      { status: 400 }
+      { error: 'Failed to create proposal', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
     );
   }
 }
