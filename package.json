@@ -7,7 +7,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "sync-proposals": "node scripts/sync-proposals-onchain.js"
+    "db:init": "psql $DATABASE_URL -f sql/init.sql",
+    "db:migrate": "psql $DATABASE_URL -f sql/init.sql",
+    "db:seed": "psql $DATABASE_URL -f sql/init.sql",
+    "sync-proposals": "node scripts/sync-proposals-onchain.js",
+    "check-system": "node scripts/utils/check-vault-account.js",
+    "docker:up": "docker-compose up --build",
+    "docker:down": "docker-compose down",
+    "anchor:build": "anchor build",
+    "anchor:test": "anchor test",
+    "anchor:deploy": "anchor deploy"
   },
   "dependencies": {
     "@auth/pg-adapter": "^1.7.0",
