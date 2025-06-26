@@ -16,7 +16,7 @@ import { Coins, Send, Loader2, CheckCircle, AlertCircle, Users } from 'lucide-re
 import PROSBalance from '@/components/PROSBalance';
 
 // PROS token mint from initialization
-const PROS_MINT = new PublicKey('8H9W98YMknMs24wSV7kzJRCehkNX8672KAYjdHGLQxt3');
+const PROS_MINT = new PublicKey('7w4KenXsTxNZAVt2z6NszouoYTfuvAGyP7y8FqA3M96i');
 
 interface MintOperation {
   id: string;

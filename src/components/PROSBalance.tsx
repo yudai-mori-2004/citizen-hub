@@ -8,8 +8,8 @@ import { PublicKey } from '@solana/web3.js';
 import { Coins, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-// PROS token mint address from initialization
-const PROS_MINT = new PublicKey('8H9W98YMknMs24wSV7kzJRCehkNX8672KAYjdHGLQxt3');
+// PROS token mint address from latest initialization
+const PROS_MINT = new PublicKey('7w4KenXsTxNZAVt2z6NszouoYTfuvAGyP7y8FqA3M96i');
 
 interface PROSBalanceProps {
   className?: string;

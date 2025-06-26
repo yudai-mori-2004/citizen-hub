@@ -13,8 +13,8 @@ import idl from '@/lib/idl.json';
 import { Gift, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import PROSBalance from '@/components/PROSBalance';
 
-// PROS token mint from initialization
-const PROS_MINT = new PublicKey('8H9W98YMknMs24wSV7kzJRCehkNX8672KAYjdHGLQxt3');
+// PROS token mint from latest initialization (update with actual mint address)
+const PROS_MINT = new PublicKey('7w4KenXsTxNZAVt2z6NszouoYTfuvAGyP7y8FqA3M96i');
 const AIRDROP_AMOUNT = 1000;
 
 export default function AirdropPage() {

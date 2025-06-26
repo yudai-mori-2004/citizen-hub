@@ -13,7 +13,7 @@ import PROSBalance from '@/components/PROSBalance';
 import { useSession } from 'next-auth/react';
 
 // PROS token mint from initialization
-const PROS_MINT = new PublicKey('8H9W98YMknMs24wSV7kzJRCehkNX8672KAYjdHGLQxt3');
+const PROS_MINT = new PublicKey('7w4KenXsTxNZAVt2z6NszouoYTfuvAGyP7y8FqA3M96i');
 
 interface TransferOperation {
   id: string;

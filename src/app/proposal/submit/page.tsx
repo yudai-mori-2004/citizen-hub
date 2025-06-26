@@ -66,7 +66,7 @@ export default function SubmitProposal() {
 
       // Get mint state PDA and fetch the actual mint
       const [mintStatePDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from("mint_state")],
+        [Buffer.from("mint_state_v2")],
         PROGRAM_ID
       );
 
@@ -75,7 +75,7 @@ export default function SubmitProposal() {
       try {
         const mintStateAccount = await program.account.mintState.fetch(mintStatePDA);
         // For now, let's use the known mint address but check if mintState exists
-        actualMint = new PublicKey('8H9W98YMknMs24wSV7kzJRCehkNX8672KAYjdHGLQxt3');
+        actualMint = new PublicKey('7w4KenXsTxNZAVt2z6NszouoYTfuvAGyP7y8FqA3M96i');
       } catch (error) {
         console.error('Error fetching mint state:', error);
         throw new Error('System not properly initialized. Please contact administrator.');
