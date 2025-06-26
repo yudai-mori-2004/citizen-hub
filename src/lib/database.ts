@@ -4,7 +4,7 @@ import { sql } from './db';
 export interface User {
   id: string;
   email: string;
-  name: string  |  null;
+  name: string   |  null;
   image: string | null;
   google_id: string | null;
   wallet_address: string | null;
