@@ -24,7 +24,7 @@ export default function SubmitProposal() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [collateralAmount, setCollateralAmount] = useState(100);
+  const collateralAmount = 100; // Fixed at 100 PROS
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -219,102 +219,147 @@ export default function SubmitProposal() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl text-center">Submit New Proposal</CardTitle>
-              <CardDescription className="text-center">
-                Share your ideas for improving our community.
-                <br />
-                Proposals require a minimum collateral of 100 PROS tokens.
-              </CardDescription>
+          <Card className="border-2 border-tropical-teal/20 shadow-lg">
+            <CardHeader className="text-center bg-gradient-to-r from-tropical-teal/5 to-tropical-orange/5">
+              <CardTitle className="text-3xl font-bold text-tropical-teal flex items-center justify-center gap-3">
+                <FileText size={32} />
+                Submit New Proposal
+              </CardTitle>
+              <p className="text-tropical-teal/70 mt-2">Share your vision for community improvement</p>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label htmlFor="title" className="block text-sm font-medium mb-2">
-                    Proposal Title *
-                  </label>
+            <CardContent className="p-8">
+              <form onSubmit={handleSubmit} className="space-y-8">
+                {/* Title Section */}
+                <div className="bg-white p-6 rounded-2xl border-2 border-gray-100 shadow-sm">
+                  <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                    <FileText size={20} />
+                    Proposal Title
+                  </h3>
                   <input
                     type="text"
-                    id="title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="e.g., Install new playground equipment in the park"
+                    className="w-full px-4 py-3 text-lg border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-tropical-teal focus:border-tropical-teal transition-all"
+                    placeholder="e.g., Install new playground equipment in Central Park"
                     required
                     maxLength={100}
                   />
-                  <div className="text-sm text-muted-foreground mt-1">
-                    {title.length}/100 characters
+                  <div className="flex justify-between mt-2 text-sm">
+                    <span className="text-gray-600">Make it clear and engaging</span>
+                    <span className="text-gray-600">{title.length}/100</span>
                   </div>
                 </div>
 
-                <div>
-                  <label htmlFor="description" className="block text-sm font-medium mb-2">
-                    Proposal Description *
-                  </label>
+                {/* Description Section */}
+                <div className="bg-green-50 p-6 rounded-2xl border-2 border-green-100">
+                  <h3 className="text-xl font-semibold mb-4 text-green-800 flex items-center gap-2">
+                    <FileText size={20} />
+                    Detailed Description
+                  </h3>
                   <textarea
-                    id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={6}
-                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="Provide detailed information about your proposal..."
+                    className="w-full px-4 py-3 border-2 border-green-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 resize-none"
+                    placeholder="Explain your proposal in detail. What problem does it solve? How will it benefit the community? What are the implementation steps?"
                     required
                     maxLength={1000}
                   />
-                  <div className="text-sm text-muted-foreground mt-1">
-                    {description.length}/1000 characters
+                  <div className="flex justify-between mt-2 text-sm">
+                    <span className="text-green-600">Provide comprehensive details to help voters understand</span>
+                    <span className="text-green-600">{description.length}/1000</span>
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Collateral Amount (PROS tokens) *
-                  </label>
-                  <input
-                    type="number"
-                    min="100"
-                    max="10000"
-                    value={collateralAmount}
-                    onChange={(e) => setCollateralAmount(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                  <div className="text-sm text-muted-foreground mt-1">
-                    Minimum: 100 PROS. Higher collateral demonstrates stronger commitment.
+                {/* Collateral Section */}
+                <div className="bg-blue-50 p-6 rounded-2xl border-2 border-blue-100">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-blue-800">
+                    <Coins size={20} />
+                    Required Collateral
+                  </h3>
+                  <div className="text-center p-6 bg-white rounded-xl border-2 border-blue-200">
+                    <div className="text-4xl font-bold text-blue-800 mb-2">100 PROS</div>
+                    <div className="text-blue-600 font-medium">Fixed collateral amount</div>
+                    <div className="text-sm text-blue-500 mt-2">
+                      This ensures all proposals have equal weight in the system
+                    </div>
+                  </div>
+                  <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+                    <div className="text-sm text-blue-700 text-center">
+                      <div className="font-medium">✓ Returned if proposal is approved</div>
+                      <div className="font-medium">✗ Forfeited if proposal is rejected</div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="bg-blue-50 p-4 rounded-md">
-                  <h4 className="font-medium mb-2">Voting Schedule</h4>
-                  <p className="text-sm text-muted-foreground">
-                    All proposals have a 7-day voting period starting the next day at 0:00 UTC.
-                  </p>
+                {/* Voting Schedule Info */}
+                <div className="bg-purple-50 p-6 rounded-2xl border-2 border-purple-100">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-purple-800">
+                    <FileText size={20} />
+                    Fixed Voting Schedule
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div className="p-4 bg-white rounded-xl border border-purple-200">
+                      <div className="text-2xl font-bold text-purple-600">Tomorrow</div>
+                      <div className="text-sm text-purple-600 font-medium">Voting Starts</div>
+                      <div className="text-xs text-purple-500">Automatically at 0:00 UTC</div>
+                    </div>
+                    <div className="p-4 bg-white rounded-xl border border-purple-200">
+                      <div className="text-2xl font-bold text-purple-600">7 Days</div>
+                      <div className="text-sm text-purple-600 font-medium">Fixed Duration</div>
+                      <div className="text-xs text-purple-500">Exactly one week</div>
+                    </div>
+                    <div className="p-4 bg-white rounded-xl border border-purple-200">
+                      <div className="text-2xl font-bold text-purple-600">Majority</div>
+                      <div className="text-sm text-purple-600 font-medium">Simple Voting</div>
+                      <div className="text-xs text-purple-500">Support vs Oppose</div>
+                    </div>
+                  </div>
+                  <div className="mt-4 p-3 bg-purple-100 rounded-lg text-center">
+                    <div className="text-sm text-purple-700 font-medium">
+                      All proposals follow the same standardized timeline for fairness
+                    </div>
+                  </div>
                 </div>
 
-                <div className="bg-accent/50 p-4 rounded-md">
-                  <h4 className="font-medium mb-2 flex items-center gap-2">
-                    <FileText size={16} />
-                    Proposal Submission & Collateral System
-                  </h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Collateral is locked when you submit the proposal</li>
-                    <li>• If your proposal is approved, your collateral is returned</li>
-                    <li>• If your proposal is rejected, you forfeit your collateral</li>
-                    <li>• Voting starts the next day at 0:00 UTC and runs for exactly 7 days</li>
-                    <li>• Results are determined by majority vote (support vs oppose)</li>
-                  </ul>
+                {/* Submit Button */}
+                <div className="text-center">
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="px-12 py-4 text-xl font-bold rounded-2xl gradient-tropical hover:gradient-sunset text-white transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isSubmitting || !title.trim() || !description.trim() || !connected}
+                  >
+                    {isSubmitting ? (
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                        Submitting Proposal...
+                      </div>
+                    ) : !connected ? (
+                      <div className="flex items-center gap-2">
+                        <AlertCircle size={20} />
+                        Connect Phantom Wallet
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <FileText size={24} />
+                        Submit Proposal & Lock 100 PROS
+                      </div>
+                    )}
+                  </Button>
+                  
+                  {connected && (
+                    <div className="mt-4 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+                      <div className="flex items-start gap-2 text-sm text-yellow-800">
+                        <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div className="font-medium">Proposal submission locks 100 PROS tokens</div>
+                          <div>If approved, collateral is returned. If rejected, collateral is forfeited to voters.</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isSubmitting || !title.trim() || !description.trim() || !connected}
-                >
-                  {isSubmitting ? "Submitting..." :
-                    !connected ? "Connect Phantom Wallet First" :
-                      `Submit Proposal (Lock ${collateralAmount} PROS)`}
-                </Button>
               </form>
             </CardContent>
           </Card>

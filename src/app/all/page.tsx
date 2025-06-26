@@ -94,9 +94,7 @@ function AllProposalsContent() {
 
   if (loading) {
     return (
-      <Layout>
-        <LoadingSpinner size="lg" text="Loading proposals..." fullScreen />
-      </Layout>
+      <LoadingSpinner size="lg" text="Loading proposals..." fullScreen />
     );
   }
 
@@ -143,7 +141,7 @@ function AllProposalsContent() {
                 <ProposalCard key={proposal.id} proposal={proposal} />
               ))}
           </div>
-          
+
           {/* Pagination */}
           {filteredProposals.length > proposalsPerPage && (
             <div className="flex justify-center items-center gap-4 mt-12">
@@ -155,7 +153,7 @@ function AllProposalsContent() {
               >
                 Previous
               </Button>
-              
+
               <div className="flex gap-2">
                 {Array.from(
                   { length: Math.ceil(filteredProposals.length / proposalsPerPage) },
@@ -171,7 +169,7 @@ function AllProposalsContent() {
                   </Button>
                 ))}
               </div>
-              
+
               <Button
                 variant="outline"
                 onClick={() => setCurrentPage(Math.min(Math.ceil(filteredProposals.length / proposalsPerPage), currentPage + 1))}

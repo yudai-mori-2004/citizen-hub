@@ -112,11 +112,6 @@ export default function Navbar() {
                     ) : (
                         /* Not logged in - Essential actions only */
                         <div className="flex items-center gap-2">
-                            <Link href="/all">
-                                <Button variant="ghost" size="sm" className="text-tropical-teal hover:bg-tropical-teal/10 rounded-xl">
-                                    Browse
-                                </Button>
-                            </Link>
                             <Link href="/auth/signin">
                                 <Button size="sm" className="gradient-tropical text-white rounded-xl flex items-center gap-2">
                                     <LogIn size={14} />

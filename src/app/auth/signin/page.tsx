@@ -22,19 +22,20 @@ export default function SignInPage() {
               className="inline-flex items-center gap-2 text-tropical-teal hover:text-tropical-orange transition-colors duration-300 mb-4 self-start"
             >
               <ArrowLeft size={16} />
-              ホームに戻る
+              Back to Home
             </Link>
             <CardTitle className="text-3xl font-light text-tropical-teal">
               <span className="font-semibold">Citizen</span><span className="text-tropical-orange">Hub</span>
             </CardTitle>
             <CardDescription className="text-tropical-teal/70 mt-2">
-              アカウントにログインして、民主的な意思決定に参加しましょう
+              Sign in to participate in democratic decision making
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
             <Button
               onClick={handleGoogleSignIn}
-              className="w-full bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 py-3 rounded-xl flex items-center justify-center gap-3"
+              variant="outline"
+              className="w-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 py-3 rounded-xl flex items-center justify-center gap-3 bg-white"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -42,28 +43,19 @@ export default function SignInPage() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
-              Googleアカウントでログイン
+              <span className="font-medium">Continue with Google</span>
             </Button>
 
             <div className="text-center text-sm text-tropical-teal/60">
               <p>
-                アカウントをお持ちでない場合は{" "}
+                Don&apos;t have an account?{" "}
                 <Link
                   href="/auth/signup"
                   className="text-tropical-orange hover:text-tropical-teal font-medium transition-colors duration-300"
                 >
-                  こちらからサインアップ
+                  Sign up here
                 </Link>
               </p>
-            </div>
-
-            <div className="bg-tropical-sun/10 p-4 rounded-xl">
-              <h4 className="font-medium text-tropical-teal mb-2">ログインについて</h4>
-              <ul className="text-sm text-tropical-teal/70 space-y-1">
-                <li>• Googleアカウントで安全にログインできます</li>
-                <li>• ログイン後、提案の投稿と投票が可能になります</li>
-                <li>• 個人情報は適切に保護されます</li>
-              </ul>
             </div>
           </CardContent>
         </Card>
