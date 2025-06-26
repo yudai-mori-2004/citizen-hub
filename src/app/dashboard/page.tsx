@@ -13,9 +13,6 @@ import {
   Activity,
   FileText,
   Vote,
-  Calendar,
-  ArrowUpCircle,
-  ArrowDownCircle,
   Minus,
   AlertCircle
 } from "lucide-react";
@@ -24,19 +21,29 @@ import { useWallet } from "@/hooks/useWallet";
 
 interface UserBalance {
   balance: number;
-  transactions: CollateralTransaction[];
+  activities: UserActivity[];
+  statistics: UserStatistics;
   user_id: string;
+  transactions: UserActivity[]; // For backward compatibility
 }
 
-interface CollateralTransaction {
+interface UserActivity {
   id: string;
-  user_id: string;
-  proposal_id: string | null;
-  vote_id: string | null;
-  transaction_type: "lock" | "return" | "forfeit" | "profit";
+  type: 'proposal' | 'vote';
+  title: string;
   amount: number;
-  description: string | null;
+  status: string;
   created_at: string;
+  tx_signature?: string;
+  support_level?: number;
+}
+
+interface UserStatistics {
+  totalProposals: number;
+  totalVotes: number;
+  totalStaked: number;
+  approvedProposals: number;
+  rejectedProposals: number;
 }
 
 export default function Dashboard() {
@@ -70,33 +77,59 @@ export default function Dashboard() {
     }
   };
 
-  const getTransactionIcon = (type: string) => {
-    switch (type) {
-      case "lock":
-        return <Minus className="w-4 h-4 text-orange-500" />;
-      case "return":
-        return <ArrowUpCircle className="w-4 h-4 text-green-500" />;
-      case "forfeit":
-        return <ArrowDownCircle className="w-4 h-4 text-red-500" />;
-      case "profit":
-        return <TrendingUp className="w-4 h-4 text-blue-500" />;
-      default:
-        return <Activity className="w-4 h-4 text-gray-500" />;
+  const getActivityIcon = (activity: UserActivity) => {
+    if (activity.type === 'proposal') {
+      return <FileText className="w-4 h-4 text-blue-500" />;
+    } else {
+      // Vote - different icons based on support level
+      if (activity.support_level !== undefined) {
+        if (activity.support_level > 50) {
+          return <TrendingUp className="w-4 h-4 text-green-500" />;
+        } else if (activity.support_level < 50) {
+          return <TrendingDown className="w-4 h-4 text-red-500" />;
+        } else {
+          return <Minus className="w-4 h-4 text-gray-500" />;
+        }
+      }
+      return <Vote className="w-4 h-4 text-purple-500" />;
     }
   };
 
-  const getTransactionColor = (type: string) => {
-    switch (type) {
-      case "lock":
-        return "text-orange-600";
-      case "return":
-        return "text-green-600";
-      case "forfeit":
-        return "text-red-600";
-      case "profit":
-        return "text-blue-600";
-      default:
-        return "text-gray-600";
+  const getActivityColor = (activity: UserActivity) => {
+    if (activity.type === 'proposal') {
+      switch (activity.status) {
+        case 'Approved':
+          return "text-green-600";
+        case 'Rejected':
+          return "text-red-600";
+        case 'Active':
+          return "text-blue-600";
+        default:
+          return "text-orange-600";
+      }
+    } else {
+      // Vote colors based on support level
+      if (activity.support_level !== undefined) {
+        if (activity.support_level > 50) {
+          return "text-green-600";
+        } else if (activity.support_level < 50) {
+          return "text-red-600";
+        } else {
+          return "text-gray-600";
+        }
+      }
+      return "text-purple-600";
+    }
+  };
+
+  const getActivityDescription = (activity: UserActivity) => {
+    if (activity.type === 'proposal') {
+      return `Proposed - ${activity.status}`;
+    } else {
+      const supportText = activity.support_level !== undefined
+        ? `${activity.support_level}% support`
+        : 'Vote cast';
+      return `${supportText} - ${activity.status}`;
     }
   };
 
@@ -111,21 +144,28 @@ export default function Dashboard() {
   };
 
   const calculateStats = () => {
-    if (!userBalance) return { totalLocked: 0, totalEarned: 0, totalLost: 0 };
+    if (!userBalance?.statistics) return {
+      totalProposals: 0,
+      totalVotes: 0,
+      totalStaked: 0,
+      successfulProposals: 0,
+      currentlyStaked: 0
+    };
 
-    const totalLocked = userBalance.transactions
-      .filter(t => t.transaction_type === "lock")
-      .reduce((sum, t) => sum + t.amount, 0);
+    const stats = userBalance.statistics;
 
-    const totalEarned = userBalance.transactions
-      .filter(t => t.transaction_type === "profit" || t.transaction_type === "return")
-      .reduce((sum, t) => sum + t.amount, 0);
+    // Calculate currently staked (assuming ongoing proposals/votes still have stake locked)
+    const currentlyStaked = userBalance.activities
+      ?.filter(a => a.status === 'Active' || a.status === 'Pending')
+      .reduce((sum, a) => sum + a.amount, 0) || 0;
 
-    const totalLost = userBalance.transactions
-      .filter(t => t.transaction_type === "forfeit")
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    return { totalLocked, totalEarned, totalLost };
+    return {
+      totalProposals: stats.totalProposals,
+      totalVotes: stats.totalVotes,
+      totalStaked: stats.totalStaked,
+      successfulProposals: stats.approvedProposals,
+      currentlyStaked
+    };
   };
 
   if (loading) {
@@ -181,32 +221,45 @@ export default function Dashboard() {
           </Card>
 
           {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="bg-blue-50 border-blue-200">
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-blue-600 font-medium">Proposals Submitted</p>
+                    <p className="text-2xl font-bold text-blue-800">
+                      {stats.totalProposals}
+                    </p>
+                  </div>
+                  <FileText className="w-8 h-8 text-blue-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-purple-50 border-purple-200">
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-purple-600 font-medium">Votes Cast</p>
+                    <p className="text-2xl font-bold text-purple-800">
+                      {stats.totalVotes}
+                    </p>
+                  </div>
+                  <Vote className="w-8 h-8 text-purple-500" />
+                </div>
+              </CardContent>
+            </Card>
 
             <Card className="bg-green-50 border-green-200">
               <CardContent className="pt-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-green-600 font-medium">Total Earned</p>
+                    <p className="text-sm text-green-600 font-medium">Successful Proposals</p>
                     <p className="text-2xl font-bold text-green-800">
-                      +{stats.totalEarned} PROS
+                      {stats.successfulProposals}
                     </p>
                   </div>
                   <TrendingUp className="w-8 h-8 text-green-500" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-red-50 border-red-200">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-red-600 font-medium">Total Lost</p>
-                    <p className="text-2xl font-bold text-red-800">
-                      -{stats.totalLost} PROS
-                    </p>
-                  </div>
-                  <TrendingDown className="w-8 h-8 text-red-500" />
                 </div>
               </CardContent>
             </Card>
@@ -215,9 +268,9 @@ export default function Dashboard() {
               <CardContent className="pt-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-orange-600 font-medium">Currently Locked</p>
+                    <p className="text-sm text-orange-600 font-medium">Total Staked</p>
                     <p className="text-2xl font-bold text-orange-800">
-                      {Math.max(0, stats.totalLocked - stats.totalEarned - stats.totalLost)} PROS
+                      {stats.totalStaked} PROS
                     </p>
                   </div>
                   <Activity className="w-8 h-8 text-orange-500" />
@@ -226,42 +279,52 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {/* Recent Transactions */}
+          {/* Recent Activities */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="w-5 h-5" />
-                Recent Transactions
+                Recent Activities
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {userBalance?.transactions.length ? (
+              {userBalance?.activities?.length ? (
                 <div className="space-y-3">
-                  {userBalance.transactions.slice(0, 10).map((transaction) => (
+                  {userBalance.activities.slice(0, 10).map((activity) => (
                     <div
-                      key={transaction.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      key={activity.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        {getTransactionIcon(transaction.transaction_type)}
-                        <div>
-                          <p className="font-medium capitalize">
-                            {transaction.transaction_type}
+                        {getActivityIcon(activity)}
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">
+                            {activity.title}
                           </p>
-                          <p className="text-sm text-gray-600">
-                            {transaction.description}
+                          <p className="text-xs text-gray-600">
+                            {getActivityDescription(activity)}
                           </p>
+                          {activity.tx_signature && (
+                            <p className="text-xs text-blue-600 font-mono">
+                              {activity.tx_signature.substring(0, 20)}...
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className={`font-medium ${getTransactionColor(transaction.transaction_type)}`}>
-                          {transaction.transaction_type === "lock" || transaction.transaction_type === "forfeit"
-                            ? "-" : "+"}
-                          {transaction.amount} PROS
+                        <p className={`font-medium ${getActivityColor(activity)}`}>
+                          {activity.amount} PROS
                         </p>
                         <p className="text-xs text-gray-500">
-                          {formatDate(transaction.created_at)}
+                          {formatDate(activity.created_at)}
                         </p>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs mt-1 ${activity.type === 'proposal' ? 'bg-blue-50' : 'bg-purple-50'
+                            }`}
+                        >
+                          {activity.type}
+                        </Badge>
                       </div>
                     </div>
                   ))}
@@ -269,8 +332,8 @@ export default function Dashboard() {
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No transactions yet</p>
-                  <p className="text-sm">Start by submitting a proposal or voting\!</p>
+                  <p>No activities yet</p>
+                  <p className="text-sm">Start by submitting a proposal or voting!</p>
                 </div>
               )}
             </CardContent>
