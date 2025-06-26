@@ -11,7 +11,7 @@ export const connection = new Connection(
 export const PROGRAM_ID = new PublicKey('GcwrHG7nXB2Tz9P2GcwYfvgTvMdN3vkVWBhMzvEsZfhk');
 
 // Important PDA seeds - must match smart contract
-export const MINT_STATE_SEED = 'mint_state';
+export const MINT_STATE_SEED = 'mint_state_v2';
 export const VAULT_SEED = 'vault';
 export const PROPOSAL_SEED = 'proposal';
 export const DEPOSIT_SEED = 'deposit';

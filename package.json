@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sync-proposals": "node scripts/sync-proposals-onchain.js"
   },
   "dependencies": {
     "@auth/pg-adapter": "^1.7.0",

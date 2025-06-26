@@ -79,7 +79,7 @@ pub mod citizenhub_program {
 
     // ② PROS 発行
     pub fn mint_to(ctx: Context<MintToCtx>, amount: u64) -> Result<()> {
-        let seeds = &[b"mint_state".as_ref(), &[ctx.accounts.mint_state.bump]];
+        let seeds = &[b"mint_state_v2".as_ref(), &[ctx.accounts.mint_state.bump]];
         token::mint_to(
             CpiContext::new_with_signer(
                 ctx.accounts.token_program.to_account_info(),
@@ -249,7 +249,7 @@ fn upsert_deposit(
 #[derive(Accounts)]
 pub struct InitializeMintCtx<'info> {
     #[account(init, payer = admin, space = 8 + MintState::LEN,
-        seeds=[b"mint_state"], bump)]
+        seeds=[b"mint_state_v2"], bump)]
     pub mint_state: Account<'info, MintState>,
 
     #[account(
@@ -283,7 +283,7 @@ pub struct MintToCtx<'info> {
     #[account(mut)]
     pub recipient: Account<'info, TokenAccount>,
 
-    #[account(seeds=[b"mint_state"], bump = mint_state.bump)]
+    #[account(seeds=[b"mint_state_v2"], bump = mint_state.bump)]
     pub mint_state: Account<'info, MintState>,
 
     pub token_program: Program<'info, Token>,

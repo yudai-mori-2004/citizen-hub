@@ -1,1 +1,0 @@
-/home/moodai/hobbyspace/citizen-hub/programs/citizenhub-program/programs/citizenhub-program/target/sbpf-solana-solana/release/libcitizenhub_program.rlib: /home/moodai/hobbyspace/citizen-hub/programs/citizenhub-program/src/lib.rs

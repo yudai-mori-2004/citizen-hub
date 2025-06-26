@@ -105,85 +105,37 @@ export default function ProposalVoting() {
   const handleVote = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!wallet || !publicKey || !connected) {
-      alert("Please connect your Phantom wallet first");
+    if (!proposal) {
+      alert("Proposal data not loaded");
       return;
     }
 
     setIsVoting(true);
 
     try {
-      // Step 1: Execute on-chain staking transaction
-      const provider = createProvider(wallet);
-      const program = new Program(idl as any, provider);
-
-      // Calculate proposal PDA from the stored proposal seed
-      if (!proposal?.on_chain_proposal_seed) {
-        throw new Error("Proposal on-chain data not found");
+      // Check if this is a legacy proposal (without on-chain data) or new proposal
+      const isLegacyProposal = !proposal.on_chain_proposal_seed;
+      
+      if (isLegacyProposal) {
+        console.log('Processing legacy proposal (off-chain only):', proposal.id);
+        // For legacy proposals, skip on-chain transaction and go directly to database
+        await handleLegacyVote();
+        return;
       }
 
-      const proposalSeedPubkey = new PublicKey(proposal.on_chain_proposal_seed);
-      const [proposalPDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from("proposal"), proposalSeedPubkey.toBuffer()],
-        PROGRAM_ID
-      );
+      console.log('Processing on-chain proposal:', proposal.id);
+      await handleOnChainVote();
+    } catch (error: any) {
+      console.error('Voting error:', error);
+      alert(`Failed to submit vote: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsVoting(false);
+    }
+  };
 
-      // Calculate deposit PDA for voting
-      const [depositPDA] = PublicKey.findProgramAddressSync(
-        [Buffer.from("deposit"), publicKey.toBuffer(), proposalPDA.toBuffer()],
-        PROGRAM_ID
-      );
-
-      // Get voter's token account
-      const voterTokenAccount = await getAssociatedTokenAddress(
-        new PublicKey('8H9W98YMknMs24wSV7kzJRCehkNX8672KAYjdHGLQxt3'), // PROS mint
-        publicKey,
-        false
-      );
-
-      // Get vault token account
-      const [mintAuthority] = PublicKey.findProgramAddressSync(
-        [Buffer.from("mint_state")],
-        PROGRAM_ID
-      );
-
-      const vaultTokenAccount = await getAssociatedTokenAddress(
-        new PublicKey('8H9W98YMknMs24wSV7kzJRCehkNX8672KAYjdHGLQxt3'), // PROS mint
-        mintAuthority,
-        true
-      );
-
-      const transaction = new Transaction();
-
-      // Add staking instruction for vote
-      const { BN } = await import('@coral-xyz/anchor');
-      const stakeInstruction = await program.methods
-        .stakeForVote(new BN(collateralAmount * 1_000_000)) // Convert to smallest units
-        .accounts({
-          voter: publicKey,
-          proposal: proposalPDA,
-          deposit: depositPDA,
-          depositorTokenAccount: voterTokenAccount,
-          vaultTokenAccount: vaultTokenAccount,
-          mint: new PublicKey('8H9W98YMknMs24wSV7kzJRCehkNX8672KAYjdHGLQxt3'),
-          tokenProgram: TOKEN_PROGRAM_ID,
-          systemProgram: SystemProgram.programId,
-        })
-        .instruction();
-
-      transaction.add(stakeInstruction);
-
-      // Set recent blockhash and fee payer
-      const { blockhash } = await connection.getLatestBlockhash();
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = publicKey;
-
-      // Sign and send transaction
-      const signedTransaction = await wallet.signTransaction(transaction);
-      const txSignature = await connection.sendRawTransaction(signedTransaction.serialize());
-      await connection.confirmTransaction(txSignature, 'confirmed');
-
-      // Step 2: Store vote in database with on-chain reference
+  // Handle voting for legacy proposals (database only)
+  const handleLegacyVote = async () => {
+    try {
       const response = await fetch(`/api/proposals/${proposalId}/vote`, {
         method: "POST",
         headers: {
@@ -193,8 +145,9 @@ export default function ProposalVoting() {
           support_level: supportLevel,
           comment: comment.trim() || null,
           collateral_amount: collateralAmount,
-          wallet_address: publicKey.toString(),
-          on_chain_transaction_signature: txSignature,
+          wallet_address: connected ? publicKey?.toString() : null,
+          on_chain_transaction_signature: null, // No on-chain transaction for legacy
+          legacy_vote: true
         }),
       });
 
@@ -202,16 +155,162 @@ export default function ProposalVoting() {
 
       if (response.ok) {
         setHasVoted(true);
-        alert(`Vote submitted successfully!\nTransaction: ${txSignature}`);
+        alert('Vote submitted successfully!');
         fetchProposal(); // Refresh proposal data
       } else {
         alert(`Voting failed: ${data.error}${data.details ? '\n\n' + data.details : ''}`);
       }
     } catch (error: any) {
-      console.error('Voting error:', error);
-      alert(`Failed to submit vote: ${error.message || 'Unknown error'}`);
-    } finally {
-      setIsVoting(false);
+      console.error('Legacy voting error:', error);
+      throw error;
+    }
+  };
+
+  // Handle voting for on-chain proposals
+  const handleOnChainVote = async () => {
+    if (!wallet || !publicKey || !connected) {
+      throw new Error("Please connect your Phantom wallet first");
+    }
+
+    // Step 1: Execute on-chain staking transaction
+    const provider = createProvider(wallet);
+    const program = new Program(idl as any, provider);
+
+    // Calculate proposal PDA from the stored proposal seed
+    const proposalSeedPubkey = new PublicKey(proposal.on_chain_proposal_seed!);
+    const [proposalPDA] = PublicKey.findProgramAddressSync(
+      [Buffer.from("proposal"), proposalSeedPubkey.toBuffer()],
+      PROGRAM_ID
+    );
+
+    // Calculate deposit PDA for voting
+    const [depositPDA] = PublicKey.findProgramAddressSync(
+      [Buffer.from("deposit"), publicKey.toBuffer(), proposalPDA.toBuffer()],
+      PROGRAM_ID
+    );
+
+    // Get mint state PDA and fetch the actual mint
+    const [mintStatePDA] = PublicKey.findProgramAddressSync(
+      [Buffer.from("mint_state")],
+      PROGRAM_ID
+    );
+
+    // Fetch mint state account to get the actual mint address
+    let actualMint: PublicKey;
+    try {
+      const mintStateAccount = await program.account.mintState.fetch(mintStatePDA);
+      // For now, let's use the known mint address but check if mintState exists
+      actualMint = new PublicKey('8H9W98YMknMs24wSV7kzJRCehkNX8672KAYjdHGLQxt3');
+    } catch (error) {
+      console.error('Error fetching mint state:', error);
+      throw new Error('System not properly initialized. Please contact administrator.');
+    }
+
+    // Get voter's token account
+    const voterTokenAccount = await getAssociatedTokenAddress(
+      actualMint,
+      publicKey,
+      false
+    );
+
+    // Get vault token account (mint authority's ATA)
+    const vaultTokenAccount = await getAssociatedTokenAddress(
+      actualMint,
+      mintStatePDA,
+      true
+    );
+
+    const transaction = new Transaction();
+
+    // Check if proposal account exists on-chain first
+    try {
+      const proposalAccount = await connection.getAccountInfo(proposalPDA);
+      if (!proposalAccount) {
+        console.error('Proposal account not found. Debug info:', {
+          proposalId,
+          proposalSeedFromDB: proposal?.on_chain_proposal_seed,
+          derivedProposalPDA: proposalPDA.toString(),
+          derivedFromSeed: proposalSeedPubkey.toString()
+        });
+        throw new Error("Proposal account not found on-chain. The proposal may not have been properly registered.");
+      }
+      console.log('✓ Proposal account found on-chain:', proposalPDA.toString());
+    } catch (error) {
+      throw new Error(`Unable to verify proposal account: ${error.message}`);
+    }
+
+    // Check if voter's token account exists and has enough balance
+    try {
+      const voterTokenInfo = await connection.getAccountInfo(voterTokenAccount);
+      if (!voterTokenInfo) {
+        throw new Error("Your PROS token account doesn't exist. Please get some PROS tokens first.");
+      }
+    } catch (error) {
+      throw new Error(`Unable to verify your token account: ${error.message}`);
+    }
+
+    // Check if vault token account exists
+    try {
+      const vaultTokenInfo = await connection.getAccountInfo(vaultTokenAccount);
+      if (!vaultTokenInfo) {
+        throw new Error("Vault token account not found. The system may not be properly initialized.");
+      }
+    } catch (error) {
+      throw new Error(`Unable to verify vault account: ${error.message}`);
+    }
+
+    // Add staking instruction for vote
+    const { BN } = await import('@coral-xyz/anchor');
+    const stakeInstruction = await program.methods
+      .stakeForVote(new BN(collateralAmount * 1_000_000)) // Convert to smallest units
+      .accounts({
+        voter: publicKey,
+        proposal: proposalPDA,
+        deposit: depositPDA,
+        depositorTokenAccount: voterTokenAccount,
+        vaultTokenAccount: vaultTokenAccount,
+        mint: actualMint,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+
+    transaction.add(stakeInstruction);
+
+    // Set recent blockhash and fee payer
+    const { blockhash } = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = publicKey;
+
+    // Sign and send transaction
+    const signedTransaction = await wallet.signTransaction(transaction);
+    const txSignature = await connection.sendRawTransaction(signedTransaction.serialize());
+    await connection.confirmTransaction(txSignature, 'confirmed');
+
+    // Step 2: Store vote in database with on-chain reference
+    const response = await fetch(`/api/proposals/${proposalId}/vote`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        support_level: supportLevel,
+        comment: comment.trim() || null,
+        collateral_amount: collateralAmount,
+        wallet_address: publicKey.toString(),
+        on_chain_transaction_signature: txSignature,
+        legacy_vote: false
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      setHasVoted(true);
+      alert(`Vote submitted successfully!\nTransaction: ${txSignature}`);
+      fetchProposal(); // Refresh proposal data
+    } else {
+      alert(`Voting failed: ${data.error}${data.details ? '\n\n' + data.details : ''}`);
     }
   };
 

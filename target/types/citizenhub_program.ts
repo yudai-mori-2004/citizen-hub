@@ -109,7 +109,10 @@ export type CitizenhubProgram = {
                   116,
                   97,
                   116,
-                  101
+                  101,
+                  95,
+                  118,
+                  50
                 ]
               }
             ]
@@ -267,7 +270,10 @@ export type CitizenhubProgram = {
                   116,
                   97,
                   116,
-                  101
+                  101,
+                  95,
+                  118,
+                  50
                 ]
               }
             ]

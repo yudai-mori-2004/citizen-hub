@@ -22,7 +22,8 @@ export async function POST(
       comment, 
       collateral_amount = 20,
       wallet_address,
-      on_chain_transaction_signature
+      on_chain_transaction_signature,
+      legacy_vote = false
     } = await request.json();
     const params = await context.params;
     const proposalId = params.id;
@@ -35,10 +36,10 @@ export async function POST(
       );
     }
 
-    // Validate required on-chain data
-    if (!wallet_address || !on_chain_transaction_signature) {
+    // Validate required on-chain data (except for legacy votes)
+    if (!legacy_vote && (!wallet_address || !on_chain_transaction_signature)) {
       return NextResponse.json(
-        { error: 'Wallet address and transaction signature are required' },
+        { error: 'Wallet address and transaction signature are required for on-chain votes' },
         { status: 400 }
       );
     }
@@ -89,8 +90,8 @@ export async function POST(
           support_level = ${support_level},
           comment = ${comment || null},
           collateral_amount = ${collateral_amount},
-          on_chain_deposit_signature = ${on_chain_transaction_signature},
-          voter_wallet_address = ${wallet_address},
+          on_chain_deposit_signature = ${on_chain_transaction_signature || null},
+          voter_wallet_address = ${wallet_address || null},
           created_at = CURRENT_TIMESTAMP
         WHERE proposal_id = ${proposalId} AND voter_id = ${voterId}
         RETURNING *
@@ -119,8 +120,8 @@ export async function POST(
           ${support_level}, 
           ${comment || null}, 
           ${collateral_amount},
-          ${on_chain_transaction_signature},
-          ${wallet_address}
+          ${on_chain_transaction_signature || null},
+          ${wallet_address || null}
         )
         RETURNING *
       `;

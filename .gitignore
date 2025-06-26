@@ -33,6 +33,7 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 secret/
+scripts/
 wallet-keypair.json
 
 # Project-specific files to exclude

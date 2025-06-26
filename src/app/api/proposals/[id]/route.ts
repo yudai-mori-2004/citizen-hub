@@ -40,6 +40,18 @@ export async function GET(
       GROUP BY p.id
     `;
     
+    // Debug logging for proposal data
+    if (proposal) {
+      console.log('Proposal data from DB:', {
+        id: proposal.id,
+        title: proposal.title,
+        has_on_chain_seed: !!proposal.on_chain_proposal_seed,
+        has_tx_signature: !!proposal.on_chain_tx_signature,
+        has_wallet_address: !!proposal.proposer_wallet_address,
+        created_at: proposal.created_at
+      });
+    }
+    
     if (!proposal) {
       return NextResponse.json(
         { error: 'Proposal not found' },

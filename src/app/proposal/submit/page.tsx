@@ -64,22 +64,34 @@ export default function SubmitProposal() {
         PROGRAM_ID
       );
 
+      // Get mint state PDA and fetch the actual mint
+      const [mintStatePDA] = PublicKey.findProgramAddressSync(
+        [Buffer.from("mint_state")],
+        PROGRAM_ID
+      );
+
+      // Fetch mint state account to get the actual mint address
+      let actualMint: PublicKey;
+      try {
+        const mintStateAccount = await program.account.mintState.fetch(mintStatePDA);
+        // For now, let's use the known mint address but check if mintState exists
+        actualMint = new PublicKey('8H9W98YMknMs24wSV7kzJRCehkNX8672KAYjdHGLQxt3');
+      } catch (error) {
+        console.error('Error fetching mint state:', error);
+        throw new Error('System not properly initialized. Please contact administrator.');
+      }
+
       // Get proposer's token account
       const proposerTokenAccount = await getAssociatedTokenAddress(
-        new PublicKey('8H9W98YMknMs24wSV7kzJRCehkNX8672KAYjdHGLQxt3'), // PROS mint
+        actualMint,
         publicKey,
         false
       );
 
       // Get vault token account (mint authority's ATA)
-      const [mintAuthority] = PublicKey.findProgramAddressSync(
-        [Buffer.from("mint_state")],
-        PROGRAM_ID
-      );
-
       const vaultTokenAccount = await getAssociatedTokenAddress(
-        new PublicKey('8H9W98YMknMs24wSV7kzJRCehkNX8672KAYjdHGLQxt3'), // PROS mint
-        mintAuthority,
+        actualMint,
+        mintStatePDA,
         true
       );
 
@@ -108,7 +120,7 @@ export default function SubmitProposal() {
           deposit: depositPDA,
           depositorTokenAccount: proposerTokenAccount,
           vaultTokenAccount: vaultTokenAccount,
-          mint: new PublicKey('8H9W98YMknMs24wSV7kzJRCehkNX8672KAYjdHGLQxt3'),
+          mint: actualMint,
           tokenProgram: TOKEN_PROGRAM_ID,
           systemProgram: SystemProgram.programId,
         })
@@ -128,6 +140,18 @@ export default function SubmitProposal() {
       // Send transaction
       const txSignature = await connection.sendRawTransaction(signedTransaction.serialize());
       await connection.confirmTransaction(txSignature, 'confirmed');
+
+      // Verify proposal account was created on-chain
+      try {
+        const proposalAccount = await connection.getAccountInfo(proposalPDA);
+        if (!proposalAccount) {
+          throw new Error('Proposal account was not created on-chain despite successful transaction');
+        }
+        console.log('✓ Proposal account successfully created on-chain:', proposalPDA.toString());
+      } catch (error) {
+        console.error('Failed to verify proposal account creation:', error);
+        throw new Error(`Proposal registration failed: ${error.message}`);
+      }
 
       // Step 2: Store proposal in database with on-chain reference
       const response = await fetch("/api/proposals", {

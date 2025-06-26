@@ -107,6 +107,7 @@ export default function InitializePage() {
   const createPROSMint = async () => {
     updateStepStatus("create-mint", "running");
     const mintKeypair = Keypair.generate();
+    console.log("Generated NEW mint keypair:", mintKeypair.publicKey.toString());
     sessionStorage.setItem("mintKeypair", JSON.stringify(Array.from(mintKeypair.secretKey)));
     updateStepStatus("create-mint", "completed", mintKeypair.publicKey.toString());
     return mintKeypair;
@@ -122,6 +123,7 @@ export default function InitializePage() {
 
   const initializeSmartContract = async (mintKeypair: Keypair, mintAuthority: string, vaultATA: string) => {
     updateStepStatus("initialize-program", "running");
+    console.log("Using mint keypair in initialize:", mintKeypair.publicKey.toString());
     try {
       const provider = createProvider(wallet);
       const program = new Program(idl as never, provider);
