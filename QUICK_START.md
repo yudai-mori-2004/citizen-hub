@@ -67,7 +67,7 @@ solana airdrop 2 <your-wallet-address> --url devnet
 
 ### Visit the Platform
 
-1. **Open**: [CitizenHub MVP URL] (replace with actual deployed URL)
+1. **Open**: https://citizen-hub-drab.vercel.app/
 2. **Sign In**: Click "Sign In with Google"
 3. **Authorize**: Allow Google OAuth permissions
 4. **Connect Wallet**: Click "Connect Phantom" and approve connection
@@ -82,7 +82,7 @@ PROS tokens are used for voting and proposal submission.
 
 ### Claim Your Airdrop
 
-1. **Navigate**: Go to **"Airdrop"** page (should be in navigation)
+1. **Navigate**: Go to **"Get Free PROS"** page (should be in navigation)
 2. **Claim Tokens**: Click **"Claim 1,000 PROS Tokens"**
 3. **Approve Transaction**: Phantom will popup → Click **"Approve"**
 4. **Wait**: Transaction takes 5-15 seconds to confirm
